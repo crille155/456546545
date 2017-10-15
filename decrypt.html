@@ -1,0 +1,46 @@
+<html>
+
+  <head>
+   <script src="jquery-3.1.1.min.js"></script>
+   <script src="aes.js"></script>
+   <script src="pbkdf2.js"></script>
+  </head>
+  <body>
+	<b>Encrypted wallet: </b><input type="text" id="wallet_address" value="">
+	<br />
+	<b>Passphrase: </b><input type="password" id="passphrase" value="">
+	<br />
+	<button onclick="execute()">submit</button>
+    <div id="decrypted"></div>
+	<script>
+		var keySize = 256;
+		var ivSize = 128;
+		var iterations = 100;
+		function execute() {
+			var message = document.getElementById("wallet_address").value;
+			var password = document.getElementById("passphrase").value;
+			var decrypted = decrypt(message, password);
+			$('#decrypted').text("Your wallet: "+ decrypted.toString(CryptoJS.enc.Utf8) );
+		}
+		function decrypt (transitmessage, pass) {
+		  var salt = CryptoJS.enc.Hex.parse(transitmessage.substr(0, 32));
+		  var iv = CryptoJS.enc.Hex.parse(transitmessage.substr(32, 32))
+		  var encrypted = transitmessage.substring(64);
+		  
+		  var key = CryptoJS.PBKDF2(pass, salt, {
+			  keySize: keySize/32,
+			  iterations: iterations
+			});
+
+		  var decrypted = CryptoJS.AES.decrypt(encrypted, key, { 
+			iv: iv, 
+			padding: CryptoJS.pad.Pkcs7,
+			mode: CryptoJS.mode.CBC
+			
+		  })
+		  return decrypted;
+		}
+	</script>
+</body>
+
+</html>
